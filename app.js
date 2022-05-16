@@ -1,32 +1,53 @@
 const express = require("express");
-const res = require("express/lib/response");
+const date = require(__dirname + "/date.js");
+
 const app = express();
+
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({extended: true}));
+app.use(express.static("public"));
 
-var items = [];
+const items = [];
+const workItems = [];
 
+//home
 app.get("/", function (req, res) {
-
-    var today = new Date();
-    var options = {
-        weekday: "long",
-        day: "numeric",
-        month: "long"
-    };
-    var day = today.toLocaleDateString("en-us", options);
-
+    let day = date.getDate();
     res.render("list", {
-        day: day,
+        listTitle: day,
         items: items
     });
 
 });
 
 app.post("/", function(req, res){
-    items.push(req.body.newItem);
-    res.redirect("/");
+    console.log(req.body);
+    if (req.body.list === "Work List"){
+        workItems.push(req.body.newItem);
+        res.redirect("/work");
+    }
+    else{
+        items.push(req.body.newItem);
+        res.redirect("/");
+    }
+});
+
+
+//work
+app.get("/work", function(req,res){
+    res.render("list", {listTitle: "Work List", items: workItems});
+});
+
+app.post("/work", function(req, res){
+    workItems.push(req.body.newItem);
+    res.redirect("/work");
+});
+
+
+//about
+app.get("/about", function(req,res){
+    res.render("about");
 });
 
 app.listen(3000, function () {
